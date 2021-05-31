@@ -1,18 +1,21 @@
 //Database Setup
+require('dotenv').config();
 const mongoose = require('mongoose');
 const {Schema} = require('mongoose');
+const encryption = require('mongoose-encryption')
 mongoose.connect('mongodb://localhost:27017/secretsdb', {useNewUrlParser: true, useUnifiedTopology: true});
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
 
-const userSchema = new Schema({
+const userSchema = new mongoose.Schema({
     email: String,
     password: String
 });
 
+userSchema.plugin(encryption, {secret: process.env.ENC_KEY, encryptedFields: ['password']});
 const User = mongoose.model("User", userSchema);
 
-const secretSchema = new Schema ({
+const secretSchema = new mongoose.Schema ({
     title: String,
     content: String,
 });
