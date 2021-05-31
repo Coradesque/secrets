@@ -1,5 +1,5 @@
 //Database Setup
-require('dotenv').config();
+const md5 = require('md5');
 const mongoose = require('mongoose');
 const {Schema} = require('mongoose');
 const encryption = require('mongoose-encryption')
@@ -12,7 +12,6 @@ const userSchema = new mongoose.Schema({
     password: String
 });
 
-userSchema.plugin(encryption, {secret: process.env.ENC_KEY, encryptedFields: ['password']});
 const User = mongoose.model("User", userSchema);
 
 const secretSchema = new mongoose.Schema ({
@@ -78,7 +77,7 @@ app.route("/login")
             console.log(err);
         } else {
             if (data.length > 0){
-                if(data[0].password === req.body.password) {
+                if(data[0].password === md5(req.body.password)) {
                     res.render("secrets");
                 } else {
                     res.render("login");
@@ -104,7 +103,7 @@ app.route("/register")
             if (data.length <= 0){
                 User.create({
                     email: req.body.username,
-                    password:req.body.password
+                    password:md5(req.body.password)
                 }, () => res.render("home"));
             } else {
                 res.send("try other email")
