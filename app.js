@@ -1,5 +1,5 @@
 //Database Setup
-const md5 = require('md5');
+const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const {Schema} = require('mongoose');
 const encryption = require('mongoose-encryption')
@@ -77,11 +77,13 @@ app.route("/login")
             console.log(err);
         } else {
             if (data.length > 0){
-                if(data[0].password === md5(req.body.password)) {
-                    res.render("secrets");
-                } else {
-                    res.render("login");
-                }
+                bcrypt.compare(req.body.password, data[0].password, function(err, result) {
+                    if(result) {
+                        res.render("secrets");
+                    } else {
+                        res.render("login");
+                    }
+                });
             } else {
                 res.render("login");
             }
@@ -101,17 +103,17 @@ app.route("/register")
             console.log(err);
         } else {
             if (data.length <= 0){
-                User.create({
-                    email: req.body.username,
-                    password:md5(req.body.password)
-                }, () => res.render("home"));
+                bcrypt.hash(req.body.password, 12, function(err, hash) {
+                    User.create({
+                        email: req.body.username,
+                        password:hash
+                    }, () => res.render("home")); 
+                });
             } else {
                 res.send("try other email")
             }
         }
     });
 });
-
-
 
 app.listen(3000, () => console.log("Connected on port 3000."))
